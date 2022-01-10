@@ -25,12 +25,16 @@ LORE_GIT_DIR="$(dirname "$0")/../.git/lore.kernel-git"
 test -n "$GITGIT_DIR" ||
 GITGIT_DIR="$(dirname "$0")/../.git/git-worktree"
 
+mailrepo = "${GITGIT_MAIL_REPO:-dev.azure.com/gitgitgadget/git/_git/lore-git}"
+mailremote = "${GITGIT_MAIL_REMOTE:-lore.kernel.org/git}"
+gitremote = "${GITGIT_GIT_REMOTE:-github.com/gitgitgadget/git}"
+
 update_mail_archive_dir () {
 	test -d "$LORE_GIT_DIR" ||
-	git clone --bare https://dev.azure.com/gitgitgadget/git/_git/lore-git "$LORE_GIT_DIR" ||
-	die "Could not clone lore.kernel/git to $LORE_GIT_DIR"
+	git clone --bare https://$mailrepo "$LORE_GIT_DIR" ||
+	die "Could not clone $mailrepo to $LORE_GIT_DIR"
 
-	git -C "$LORE_GIT_DIR" fetch https://lore.kernel.org/git/0 master:master ||
+	git -C "$LORE_GIT_DIR" fetch https://$mailremote/0 master:master ||
 	die "Could not update $LORE_GIT_DIR to remote's master"
 
 	head="$(git -C "$LORE_GIT_DIR" rev-parse --verify master)" ||
@@ -57,10 +61,10 @@ update_mail_archive_dir () {
 
 update_gitgit_dir () {
 	test -d "$GITGIT_DIR" ||
-	git clone https://github.com/gitgitgadget/git "$GITGIT_DIR" ||
-	die "Could not clone gitgitgadget/git to $GITGIT_DIR"
+	git clone https://$gitremote "$GITGIT_DIR" ||
+	die "Could not clone $gitremote to $GITGIT_DIR"
 
-	git -C "$GITGIT_DIR" fetch https://github.com/gitgitgadget/git refs/notes/commit-to-mail:refs/notes/commit-to-mail ||
+	git -C "$GITGIT_DIR" fetch https://$gitremote refs/notes/commit-to-mail:refs/notes/commit-to-mail ||
 	die "Could not update refs/notes/commit-to-mail"
 
 	if git -C "$GITGIT_DIR" rev-parse --verify refs/remotes/gitster/seen >/dev/null 2>&1
@@ -417,7 +421,7 @@ die "Failed to identify Message-Id for $1: $messageid"
 case $mode in
 print) echo $messageid;;
 open)
-	url=https://lore.kernel.org/git/$messageid
+	url=https://$mailremote/$messageid
 	case "$(uname -s)" in
 	Linux) xdg-open "$url";;
 	MINGW*|MSYS*) start "$url";;
