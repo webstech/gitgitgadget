@@ -7,6 +7,7 @@ import {
 import { IMailMetadata } from "../lib/mail-metadata";
 import { testSmtpServer } from "test-smtp-server";
 import { testCreateRepo, TestRepo } from "./test-lib";
+import { IConfig, getConfig, setConfig } from "../lib/project-config";
 
 jest.setTimeout(180000);
 
@@ -34,7 +35,7 @@ class TestCIHelper extends CIHelper {
     public updatePRCalls: string[][]; // reference mock.calls
     public addPRLabelsCalls: Array<[_: string, labels: string[]]>;
 
-    public constructor(workDir?: string, debug = false, gggDir = ".") {
+    public constructor(workDir: string, debug = false, gggDir = ".") {
         super(workDir, debug, gggDir);
         this.testing = true;
         this.ghGlue = this.github;
@@ -290,7 +291,7 @@ test("handle comment allow basic test", async () => {
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/is now allowed to use GitGitGadget/);
+        .toMatch(/is now allowed to use/);
 });
 
 test("handle comment allow fail invalid user", async () => {
@@ -335,7 +336,7 @@ test("handle comment allow no public email", async () => {
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/is now allowed to use GitGitGadget/);
+        .toMatch(/is now allowed to use/);
     expect(ci.addPRCommentCalls[0][1])
         .toMatch(/no public email address set/);
 });
@@ -364,7 +365,7 @@ test("handle comment allow already allowed", async () => {
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/already allowed to use GitGitGadget/);
+        .toMatch(/already allowed to use/);
 });
 
 test("handle comment allow no name specified (with trailing white space)",
@@ -408,7 +409,7 @@ test("handle comment allow no name specified (with trailing white space)",
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/already allowed to use GitGitGadget/);
+        .toMatch(/already allowed to use/);
 });
 
 test("handle comment disallow basic test", async () => {
@@ -435,7 +436,7 @@ test("handle comment disallow basic test", async () => {
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/is no longer allowed to use GitGitGadget/);
+        .toMatch(/is no longer allowed to use/);
 });
 
 test("handle comment disallow was not allowed", async () => {
@@ -455,7 +456,7 @@ test("handle comment disallow was not allowed", async () => {
 
     await ci.handleComment("gitgitgadget", 433865360);
     expect(ci.addPRCommentCalls[0][1])
-        .toMatch(/already not allowed to use GitGitGadget/);
+        .toMatch(/already not allowed to use/);
 });
 
 test("handle comment submit not author", async () => {
@@ -1270,4 +1271,43 @@ test("Handle comment cc", async () => {
 
     expect(ci.updatePRCalls[0][2]).toMatch(/S Body/);
     expect(ci.updatePRCalls).toHaveLength(1);
+});
+
+test("test config updates", () => {
+    let config: IConfig = getConfig();
+    console.log(JSON.stringify(config, null, 2));
+    const defaultConfig: IConfig = {
+        repo: {
+            name: "updated",
+            owner: "gitgitgadget",
+            owners: ["gitgitgadget", "git", "dscho"],
+            branches: ["maint", "seen"],
+            trackingBranches: ["master"],
+            closingBranches: ["master"],
+            host: "github.com",
+        },
+        mailrepo: {
+            name: "git",
+            owner: "gitgitgadget",
+            branches: ["maint", "seen"],
+            host: "lore.kernel.org",
+        },
+        app: {
+            appid: 12836,
+            installationID: 195971,
+            name: "gitgitgadget",
+            altname: "gitgitgadget-git"
+        },
+        lint: {
+            maxcommitsignore: [
+                "https://github.com/gitgitgadget/git/pull/923"
+            ],
+            maxcommits: 10,
+        },
+        user: {
+            allowUserAsLogin: false,
+        }
+    };
+    config = setConfig(defaultConfig);
+    console.log(JSON.stringify(config, null, 2));
 });
