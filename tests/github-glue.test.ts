@@ -601,3 +601,11 @@ test("test missing values in response using small schema", async () => {
     (sampleUser as IPrivateUser).name = null;
     expect(await github.getGitHubUserInfo(owner)).toBeTruthy();
 });
+
+test("test getReviewersForOrg", async () => {
+    const github = new GitHubProxy();
+
+    const users = await github.getReviewersForOrg(owner, "gitgitgadget");
+    expect(users).toContain("dscho");
+    // console.log(users);
+});

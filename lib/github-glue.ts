@@ -465,6 +465,27 @@ export class GitHubGlue {
         }
     }
 
+    /**
+     * Get a set of all reviewers for an org.  Not really what is wanted,
+     *
+     * @param repositoryOwner the name of the owner for authorization
+     * @param org the name of the organization
+     */
+    public async getReviewersForOrg(repositoryOwner: string, org: string): Promise<string[]> {
+        await this.ensureAuthenticated(this.authenticated || repositoryOwner);
+        // const team_slug = "reviewers";
+        const team_slug = "core";
+
+        try {
+            const response = await this.client.rest.teams.listMembersInOrg({ org, team_slug });
+//            console.log(JSON.stringify(response.data.map((value) => value.login), null, 2));
+
+            return response.data.map((value) => value.login);
+        } catch (error) {
+            throw new Error(`Team "${team_slug}" not found in ${org}.`);
+        }
+    }
+
     protected async ensureAuthenticated(repositoryOwner: string):
         Promise<void> {
         if (repositoryOwner !== this.authenticated) {
