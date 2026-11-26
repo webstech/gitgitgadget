@@ -38,7 +38,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mailparser": "^3.9.0",
     "@types/node": "^26.6.6",
-    "@types/nodemailer": "^8.0.1",
+    "@types/nodemailer": "^8.0.2",
     "@types/rfc2047": "^2.0.3",
     "@typescript/native": "npm:typescript@7.0.2",
     "@vercel/ncc": "^0.45.0",
